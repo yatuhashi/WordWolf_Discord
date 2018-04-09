@@ -3,6 +3,7 @@ import random
 import asyncio
 import os
 
+
 class OneGame():
 
     def __init__(self):
@@ -43,6 +44,11 @@ class OneGame():
     def Post(self, mem):
         self.post[mem] = self.post[mem] + 1
 
+    def ResetPost(self):
+        self.post = {}
+        for i in self.members:
+            self.post[i] = 0
+
     def Channel(self, ch):
         self.channel = ch
 
@@ -64,7 +70,7 @@ Game開始(:GameStart)\n
 async def on_message(message):
     global SomeGame
     # Gameを初期化し、メンバーの募集を始める
-    if message.content.startswith(":GameReset"):
+    if message.content.startswith(":GameNew"):
         SomeGame = OneGame()
         SomeGame.Channel(message.channel)
         await client.send_message(message.channel, "Gameデータをリセットしました。\n")
@@ -106,6 +112,7 @@ async def on_message(message):
     if message.content.startswith(":GameStart"):
         # wolfを決める
         SomeGame.Wolf()
+        SomeGame.ResetPost()
         # 全員にDMを送る
         for i in message.server.members:
             for j in SomeGame.members:
