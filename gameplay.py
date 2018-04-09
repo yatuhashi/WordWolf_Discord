@@ -56,15 +56,18 @@ class OneGame():
 SomeGame = OneGame()
 client = discord.Client()
 inst = """\n
-Memberの入力(\":GameAddMember やつはし\")\n
-Memberの削除(\":GameDelMember やつはし\")\n
-Memberのリセット(\":GameResetMember\")\n
-Memberの確認(\":GameMember やつはし\")\n
-Wordのセット(\":GameWord 多数派 少数派\")\n
-Wolfの人数を変える(\":GameWolfNum 2\")\n
-Gameの時間を変えるmin(\":GameTime 5\")\n
-投票は、DMに(\":GamePost やつはし\")\n
-Game開始(:GameStart)\n
+**********************************************
+Gameの初期化        :GameNew
+Memberの入力        :GameAddMember やつはし
+Memberの削除        :GameDelMember やつはし
+Memberの初期化      :GameResetMember
+Memberの確認        :GameMember
+Wordの入力          :GameWord 多数派 少数派
+Wolfの人数変更      :GameWolfNum 2
+Gameの時間変更(min) :GameTime 5
+投票は、DMに        :GamePost やつはし
+Game開始            :GameStart
+**********************************************
 """
 
 
@@ -75,19 +78,19 @@ async def on_message(message):
     if message.content.startswith(":GameNew"):
         SomeGame = OneGame()
         SomeGame.Channel(message.channel)
-        await client.send_message(message.channel, "Gameデータをリセットしました。\n")
-        await client.send_message(message.channel, inst)
-        await client.send_message(message.channel, "現在サーバーにいるメンバーは、")
+        m = "Gameデータをリセットしました\n" + inst + "\n" + "#######現在サーバーにいるメンバーは以下の人です#######"
+        await client.send_message(message.channel, m)
         for i in message.server.members:
             await client.send_message(message.channel, i.name + "\n")
-        await client.send_message(message.channel, "上記の人をゲームに参加させてください(:GameAddMember やつはし)")
+        m = "############################################\n上記の人をゲームに参加させてください  :GameAddMember やつはし"
+        await client.send_message(message.channel, m)
     # メンバーの追加
     if message.content.startswith(":GameAddMember "):
         member = message.content.split(" ")
         SomeGame.AddMember(member[1])
         for i in message.server.members:
             if member[1] == i.name:
-                await client.send_message(i, "Gameに参加しました。投票はここでしてください。")
+                await client.send_message(i, "WordWolfGameに参加しました。投票はここでしてください  :GamePost やつはし")
     # メンバーの確認
     if message.content.startswith(":GameMember"):
         for i in SomeGame.members:
@@ -125,14 +128,18 @@ async def on_message(message):
                         continue
                     await client.send_message(i, SomeGame.major_word)
         # 開始の合図
-        m = "Game 開始です!!"
+        m = "WordWolfGame 開始です!!"
         await client.send_message(SomeGame.channel, m)
         # Timer開始
-        for i in range(SomeGame.time_min):
-            m = "後" + str(SomeGame.time_min - i) + "分です。"
+        for i in range(SomeGame.time_min - 1):
+            m = "後" + str(SomeGame.time_min - i) + "分です"
             await client.send_message(SomeGame.channel, m)
             await asyncio.sleep(60.0)
-        m = "Game 終了です!!\n 投稿してください。DMに(:GamePost やつはし)"
+        await asyncio.sleep(30.0)
+        m = "残り30秒です\n"
+        await client.send_message(SomeGame.channel, m)
+        await asyncio.sleep(30.0)
+        m = "Game 終了です!!\n 投稿してください。DMに  :GamePost やつはし"
         await client.send_message(SomeGame.channel, m)
     # 集計
     if message.content.startswith(":GamePost "):
