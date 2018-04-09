@@ -21,7 +21,7 @@ class OneGame():
         self.post[mem] = 0
 
     def DelMember(self, mem):
-        del self.members[mem]
+        self.members.remove(mem)
         del self.post[mem]
 
     def ResetMember(self):
@@ -55,13 +55,15 @@ class OneGame():
 
 SomeGame = OneGame()
 client = discord.Client()
-inst = """\nMemberの入力(\":GameAddMember やつはし\")\n
+inst = """\n
+Memberの入力(\":GameAddMember やつはし\")\n
 Memberの削除(\":GameDelMember やつはし\")\n
 Memberのリセット(\":GameResetMember\")\n
+Memberの確認(\":GameMember やつはし\")\n
 Wordのセット(\":GameWord 多数派 少数派\")\n
 Wolfの人数を変える(\":GameWolfNum 2\")\n
 Gameの時間を変えるmin(\":GameTime 5\")\n
-投票は、DMに(\":GamePost @membername\")\n
+投票は、DMに(\":GamePost やつはし\")\n
 Game開始(:GameStart)\n
 """
 
