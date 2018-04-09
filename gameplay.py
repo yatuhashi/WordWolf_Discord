@@ -1,7 +1,7 @@
 import discord
 import random
 import asyncio
-
+import os
 
 class OneGame():
 
@@ -143,4 +143,5 @@ async def on_message(message):
             await client.send_message(SomeGame.channel, "少数派: " + SomeGame.minor_word + "\n")
 
 
-client.run("")
+print("起動")
+client.run(os.environ["DISCORDTOKEN"])

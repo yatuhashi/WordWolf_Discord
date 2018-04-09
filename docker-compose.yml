@@ -1,0 +1,13 @@
+version: '2'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: wordwolf
+    container_name: wordwolf
+    volumes:
+      - ./word/:/wolf/word/
+    environment:
+      - DISCORDTOKEN=xxxxxxxxxxxxxx
+    command: ["/usr/local/bin/python", "/wolf/gameplay.py"]
