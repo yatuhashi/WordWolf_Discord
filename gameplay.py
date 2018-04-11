@@ -80,8 +80,10 @@ async def on_message(message):
         SomeGame.Channel(message.channel)
         m = "Gameデータをリセットしました\n" + inst + "\n" + "#######現在サーバーにいるメンバーは以下の人です#######"
         await client.send_message(message.channel, m)
+        member_list = ""
         for i in message.server.members:
-            await client.send_message(message.channel, i.name + "\n")
+            member_list = member_list + "・" + str(i.name)
+        await client.send_message(message.channel, member_list + "\n")
         m = "############################################\n上記の人をゲームに参加させてください  :GameAddMember やつはし"
         await client.send_message(message.channel, m)
     # メンバーの追加
