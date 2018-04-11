@@ -82,7 +82,8 @@ async def on_message(message):
         await client.send_message(message.channel, m)
         member_list = ""
         for i in message.server.members:
-            member_list = member_list + "・" + str(i.name)
+            if str(i.status) == "online":
+                member_list = member_list + "・" + str(i.name)
         await client.send_message(message.channel, member_list + "\n")
         m = "############################################\n上記の人をゲームに参加させてください  :GameAddMember やつはし"
         await client.send_message(message.channel, m)
