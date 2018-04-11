@@ -74,6 +74,17 @@ Game開始            :GameStart
 @client.event
 async def on_message(message):
     global SomeGame
+    # Help
+    if message.content.startswith(":GameHelp"):
+        await client.send_message(message.channel, inst)
+    # GameBotのメッセージ削除
+    if message.content.startswith(":GameDelMessage "):
+        number = message.content.split(" ")
+        mgs = []  # Empty list to put all the messages in the log
+        number = int(number[1])  # Converting the amount of messages to delete to an integer
+        async for x in Client.logs_from(ctx.message.channel, limit=number):
+            mgs.append(x)
+    await client.delete_messages(mgs)
     # Gameを初期化し、メンバーの募集を始める
     if message.content.startswith(":GameNew"):
         SomeGame = OneGame()
