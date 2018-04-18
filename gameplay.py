@@ -1,7 +1,7 @@
-import discord
 import random
 import asyncio
 import os
+from discord.ext.commands import Bot
 
 
 class OneGame():
@@ -52,9 +52,12 @@ class OneGame():
     def Channel(self, ch):
         self.channel = ch
 
+    def Server(self, sv):
+        self.server = sv
+
 
 SomeGame = OneGame()
-client = discord.Client()
+client = Bot(command_prefix=':')
 inst = """\n
 **********************************************
 Gameの初期化        :GameNew
@@ -67,111 +70,128 @@ Wolfの人数変更      :GameWolfNum 2
 Gameの時間変更(min) :GameTime 5
 投票は、DMに        :GamePost やつはし
 Game開始            :GameStart
+GameHelp            :GameHelp
 **********************************************
 """
 
 
-@client.event
-async def on_message(message):
-    global SomeGame
-    # Help
-    if message.content.startswith(":GameHelp"):
-        await client.send_message(message.channel, inst)
-    # GameBotのメッセージ削除
-    # if message.content.startswith(":GameDelMessage "):
-    #     number = message.content.split(" ")
-    #     mgs = []  # Empty list to put all the messages in the log
-    #     number = int(number[1])  # Converting the amount of messages to delete to an integer
-    #     async for x in client.logs_from(message.channel, limit=number):
-    #         mgs.append(x)
-    # await client.delete_messages(mgs)
+@client.command(pass_context=True)
+async def GameHelp(context):
+    await client.send_message(context.message.channel, inst)
+
+
+@client.command(pass_context=True)
+async def GameNew(context):
     # Gameを初期化し、メンバーの募集を始める
-    if message.content.startswith(":GameNew"):
-        SomeGame = OneGame()
-        SomeGame.Channel(message.channel)
-        m = "Gameデータをリセットしました\n" + inst + "\n" + "#######現在サーバーにいるメンバーは以下の人です#######"
-        await client.send_message(message.channel, m)
-        member_list = ""
-        for i in message.server.members:
-            if str(i.status) == "online":
-                member_list = member_list + "・" + str(i.name)
-        await client.send_message(message.channel, member_list + "\n")
-        m = "############################################\n上記の人をゲームに参加させてください  :GameAddMember やつはし"
-        await client.send_message(message.channel, m)
+    global SomeGame
+    SomeGame = OneGame()
+    SomeGame.Channel(context.message.channel)
+    m1 = "Gameデータをリセットしました\n" + inst + "\n" + "#######現在サーバーにいるメンバーは以下の人です#######"
+    member_list = ""
+    for i in context.message.server.members:
+        if str(i.status) == "online":
+            member_list = member_list + "・" + str(i.name)
+    m2 = "############################################\n上記の人をゲームに参加させてください  :GameAddMember やつはし"
+    await client.send_message(SomeGame.channel, m1 + "\n" + member_list + "\n" + m2)
+
+
+@client.command(pass_context=True)
+async def GameAddMember(context, member):
     # メンバーの追加
-    if message.content.startswith(":GameAddMember "):
-        member = message.content.split(" ")
-        SomeGame.AddMember(member[1])
-        for i in message.server.members:
-            if member[1] == i.name:
-                await client.send_message(i, "WordWolfGameに参加しました。投票はここでしてください  :GamePost やつはし")
+    global SomeGame
+    SomeGame.AddMember(str(member))
+    for i in context.message.server.members:
+        if member[1] == i.name:
+            await client.send_message(i, "WordWolfGameに参加しました。投票はここでしてください  :GamePost やつはし")
+
+
+@client.command()
+async def GameMember():
     # メンバーの確認
-    if message.content.startswith(":GameMember"):
-        for i in SomeGame.members:
-            await client.send_message(SomeGame.channel, i)
+    global SomeGame
+    for i in SomeGame.members:
+        await client.send_message(SomeGame.channel, i)
+
+
+@client.command()
+async def GameDelMember(member):
     # メンバーの削除
-    if message.content.startswith(":GameDelMember "):
-        member = message.content.split(" ")
-        SomeGame.DelMember(member[1])
+    global SomeGame
+    SomeGame.DelMember(str(member))
+
+
+@client.command()
+async def GameResetMember():
     # メンバーのリセット
-    if message.content.startswith(":GameResetMember"):
-        SomeGame.ResetMember()
+    global SomeGame
+    SomeGame.ResetMember()
+
+
+@client.command()
+async def GameWord(word1, word2):
     # 単語の追加
-    if message.content.startswith(":GameWord "):
-        word = message.content.split(" ")
-        SomeGame.Word(word[2], word[1])
+    global SomeGame
+    SomeGame.Word(word2, word1)
+
+
+@client.command()
+async def GameWolfNum(num):
     # wolfの数を変更
-    if message.content.startswith(":GameWolfNum "):
-        wolf_num = message.content.split(" ")
-        SomeGame.WolfNum(int(wolf_num[1]))
+    global SomeGame
+    SomeGame.WolfNum(int(num))
+
+
+@client.command()
+async def GameTime(m):
     # Game時間を変更
-    if message.content.startswith(":GameTime "):
-        time_min = message.content.split(" ")
-        SomeGame.Time(int(time_min[1]))
-    # wolfの数を変更
-    if message.content.startswith(":GameStart"):
-        # wolfを決める
-        SomeGame.Wolf()
-        SomeGame.ResetPost()
-        # 全員にDMを送る
-        for i in message.server.members:
-            for j in SomeGame.members:
-                if i.name == j:
-                    if j in SomeGame.wolf:
-                        await client.send_message(i, SomeGame.minor_word)
-                        continue
-                    await client.send_message(i, SomeGame.major_word)
-        # 開始の合図
-        m = "WordWolfGame 開始です!!"
+    global SomeGame
+    SomeGame.Time(int(m))
+
+
+@client.command(pass_context=True)
+async def GameStart(context):
+    global SomeGame
+    # wolfを決める
+    SomeGame.Wolf()
+    SomeGame.ResetPost()
+    # 全員にDMを送る
+    for i in context.message.server.members:
+        for j in SomeGame.members:
+            if i.name == j:
+                if j in SomeGame.wolf:
+                    await client.send_message(i, SomeGame.minor_word)
+                    continue
+                await client.send_message(i, SomeGame.major_word)
+    # 開始の合図
+    m = "WordWolfGame 開始です!!"
+    await client.send_message(SomeGame.channel, m)
+    # Timer開始
+    for i in range(SomeGame.time_min - 1):
+        m = "後" + str(SomeGame.time_min - i) + "分です"
         await client.send_message(SomeGame.channel, m)
-        # Timer開始
-        for i in range(SomeGame.time_min - 1):
-            m = "後" + str(SomeGame.time_min - i) + "分です"
-            await client.send_message(SomeGame.channel, m)
-            await asyncio.sleep(60.0)
-        await asyncio.sleep(30.0)
-        m = "残り30秒です\n"
-        await client.send_message(SomeGame.channel, m)
-        await asyncio.sleep(30.0)
-        m = "Game 終了です!!\n 投稿してください。DMに  :GamePost やつはし"
-        await client.send_message(SomeGame.channel, m)
+        await asyncio.sleep(60.0)
+    await asyncio.sleep(30.0)
+    m = "残り30秒です\n"
+    await client.send_message(SomeGame.channel, m)
+    await asyncio.sleep(30.0)
+    m = "Game 終了です!!\n 投稿してください。DMに  :GamePost やつはし"
+    await client.send_message(SomeGame.channel, m)
+
+
+@client.command()
+async def GamePost(post):
     # 集計
-    if message.content.startswith(":GamePost "):
-        post = message.content.split(" ")
-        SomeGame.Post(post[1])
-        if len(SomeGame.members) == sum(SomeGame.post.values()):
-            m = "集計結果"
-            await client.send_message(SomeGame.channel, m)
-            for k, v in SomeGame.post.items():
-                await client.send_message(SomeGame.channel, str(k) + ":" + str(v) + "\n")
-            m = "wolfは、"
-            await client.send_message(SomeGame.channel, m)
-            for i in SomeGame.wolf:
-                await client.send_message(SomeGame.channel, str(i) + "\n")
-            m = "wordは、"
-            await client.send_message(SomeGame.channel, m)
-            await client.send_message(SomeGame.channel, "多数派: " + SomeGame.major_word + "\n")
-            await client.send_message(SomeGame.channel, "少数派: " + SomeGame.minor_word + "\n")
+    global SomeGame
+    SomeGame.Post(str(post))
+    if len(SomeGame.members) == sum(SomeGame.post.values()):
+        m = "集計結果\n"
+        for k, v in SomeGame.post.items():
+            m = m + str(k) + ":" + str(v) + "\n"
+        m = m + "\nwolfは、"
+        for i in SomeGame.wolf:
+            m = m + str(i) + ", "
+        m = m[:-2] + "\nwordは、多数派: " + SomeGame.major_word + " 少数派: " + SomeGame.minor_word
+        await client.send_message(SomeGame.channel, m)
 
 
 print("起動")
