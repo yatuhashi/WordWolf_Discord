@@ -59,7 +59,7 @@ class OneGame():
 SomeGame = OneGame()
 client = Bot(command_prefix=':')
 inst = """\n
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 reset game                 :GameNew
 input member               :GameAddMember MemberName
 delete member              :GameDelMember MemberName
@@ -71,7 +71,7 @@ change the game time(min)  :GameTime 5
 post in DM                 :GamePost MemberName
 game start                 :GameStart
 Help                       :GameHelp
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 """
 
 
@@ -86,7 +86,7 @@ async def GameNew(context):
     global SomeGame
     SomeGame = OneGame()
     SomeGame.Channel(context.message.channel)
-    m1 = "Reset the game data.\n" + inst + "\n" + "#######current members in this server.#######"
+    m1 = "Reset the game data.\n" + inst + "\n" + "##########current members in this server.#############"
     member_list = ""
     for i in context.message.server.members:
         if str(i.status) == "online":
@@ -117,7 +117,10 @@ async def GameMember():
 async def GameDelMember(member):
     # メンバーの削除
     global SomeGame
-    SomeGame.DelMember(str(member))
+    try:
+        SomeGame.DelMember(str(member))
+    except:
+        await client.send_message(SomeGame.channel, "Error")
 
 
 @client.command()
@@ -131,21 +134,30 @@ async def GameResetMember():
 async def GameWord(word1, word2):
     # 単語の追加
     global SomeGame
-    SomeGame.Word(word2, word1)
+    try:
+        SomeGame.Word(word2, word1)
+    except:
+        await client.send_message(SomeGame.channel, "Error")
 
 
 @client.command()
 async def GameWolfNum(num):
     # wolfの数を変更
     global SomeGame
-    SomeGame.WolfNum(int(num))
+    try:
+        SomeGame.WolfNum(int(num))
+    except:
+        await client.send_message(SomeGame.channel, "Error")
 
 
 @client.command()
 async def GameTime(m):
     # Game時間を変更
     global SomeGame
-    SomeGame.Time(int(m))
+    try:
+        SomeGame.Time(int(m))
+    except:
+        await client.send_message(SomeGame.channel, "Error")
 
 
 @client.command(pass_context=True)
@@ -178,11 +190,14 @@ async def GameStart(context):
     await client.send_message(SomeGame.channel, m)
 
 
-@client.command()
-async def GamePost(post):
+@client.command(pass_context=True)
+async def GamePost(context, post):
     # 集計
     global SomeGame
-    SomeGame.Post(str(post))
+    if post in SomeGame.members:
+        SomeGame.Post(str(post))
+    else:
+        await client.send_message(context.message.channel, "Error")
     if len(SomeGame.members) == sum(SomeGame.post.values()):
         m = "Result\n"
         for k, v in SomeGame.post.items():
