@@ -99,9 +99,9 @@ async def GameNew(context):
 async def GameAddMember(context, member):
     # メンバーの追加
     global SomeGame
-    SomeGame.AddMember(str(member))
     for i in context.message.server.members:
-        if member[1] == i.name:
+        if member == i.name:
+            SomeGame.AddMember(str(member))
             await client.send_message(i, "WordWolfGameに参加しました。投票はここでしてください  :GamePost やつはし")
 
 
