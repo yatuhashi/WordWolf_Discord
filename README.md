@@ -19,14 +19,15 @@ Discord StartGameSetting
 
 PlayCommand
 ```
-Gameの初期化        :GameNew
-Memberの入力        :GameAddMember やつはし
-Memberの削除        :GameDelMember やつはし
-Memberの初期化      :GameResetMember
-Memberの確認        :GameMember
-Wordの入力          :GameWord 多数派 少数派
-Wolfの人数変更      :GameWolfNum 2
-Gameの時間変更(min) :GameTime 5
-投票は、DMに        :GamePost やつはし
-Game開始            :GameStart
+reset game                 :GameNew
+input member               :GameAddMember MemberName
+delete member              :GameDelMember MemberName
+reset member               :GameResetMember
+member list                :GameMember
+input word                 :GameWord MajorWord MinorWord
+change the number of wolf  :GameWolfNum 2
+change the game time(min)  :GameTime 5
+post in DM                 :GamePost MemberName
+game start                 :GameStart
+Help                       :GameHelp
 ```
